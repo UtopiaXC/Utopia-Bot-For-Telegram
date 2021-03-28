@@ -9,6 +9,8 @@
 
 本项目原型[Utopia-Bot-For-QQ](https://github.com/UtopiaXC/Utopia-Bot-For-QQ)，由于QQ诸多限制，现全面转向Telegram  
 
+机器人实例：[@UtopiaXA_bot](https://t.me/UtopiaXA_bot)  
+
  ## 目录
 
 1. [简介](#简介)
