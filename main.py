@@ -16,12 +16,18 @@ from telegram.ext import (
 
 import config
 import requests
+import sql_funcs
+
+if not sql_funcs.sql_start_check():
+    print("数据库错误")
+    exit(1)
 
 if config.Token == "":
     print("请先在config.py中输入对应Token后使用")
     exit(1)
 
-SETU, SENTENCE, STOCK_FUNC, STOCK_MINE, STOCK_SEARCH, STOCK_SELECT = range(6)
+SETU, SENTENCE, STOCK_FUNC, STOCK_MINE, STOCK_ADD_MINE, STOCK_DO_ADD_MINE, STOCK_DELETE_MINE, STOCK_DO_DELETE_MINE, STOCK_SEARCH, STOCK_SELECT = range(
+    10)
 updater = Updater(token=config.Token, use_context=True)
 dispatcher = updater.dispatcher
 header = {
@@ -31,10 +37,11 @@ header = {
 
 
 # 开始功能
-def start(update, context):
+def start(update: Update, context):
+    user = update.effective_user.name
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="欢迎使用Utopia机器人，请使用/help查看全部指令"
+        text=user + "：欢迎使用Utopia机器人，请使用/help查看全部指令"
     )
 
 
@@ -44,16 +51,18 @@ dispatcher.add_handler(handler)
 
 # 指令帮助
 def help(update, context):
+    user = update.effective_user.name
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="/help 查看全部指令\n"
-             "/setu 获取一张涩图\n"
-             "/sentence 获取一句名言\n"
-             "/weibo 获取微博热搜\n"
-             "/zhihu 随机获取一条知乎日报\n"
-             "/bili 随机获取一条bilibili热榜视频\n"
-             "/stock 股票操作\n"
-             "/cancel 取消正在执行中的任务"
+        text=user + "：\n/help - 获得全部指令帮助\n"
+                    "/cancel - 终止当前进行中的任务（当机器人不响应的时候请选择）\n"
+                    "/stock - 股票信息查询\n"
+                    "/stock_mine - 快速查询自选股\n"
+                    "/setu - 获取一张随机涩图\n"
+                    "/sentence - 一言：获取随机一句名句\n"
+                    "/weibo - 获取微博热搜\n"
+                    "/zhihu - 随机获取一条知乎日报\n"
+                    "/bili - 随机获取一条bilibili热榜视频\n"
     )
 
 
@@ -70,8 +79,9 @@ def setu_input(update: Update, _: CallbackContext):
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
+    user = update.effective_user.name
     update.message.reply_text(
-        '请选择您需要的是R18还是非R18涩图',
+        user + '：请选择您需要的是R18还是非R18涩图',
         reply_markup=reply_markup,
     )
     return SETU
@@ -89,9 +99,10 @@ def setu(update: Update, _: CallbackContext) -> None:
         res = requests.get("https://api.lolicon.app/setu/?r18=" + str(r18) + "&apikey=" + config.setu_Token)
         json_str = json.loads(res.text)
         if json_str['code'] == 401:
+            user = update.effective_user.name
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="API接口超过调用限制（每令牌每天限制300）或API令牌被封禁"
+                text=user + "：API接口超过调用限制（每令牌每天限制300）或API令牌被封禁"
             )
         url = json_str['data'][0]['url']
         author = json_str['data'][0]['author']
@@ -100,25 +111,28 @@ def setu(update: Update, _: CallbackContext) -> None:
         is_r = "否"
         if r18 != 0:
             is_r = "是"
+        user = update.effective_user.name
         query.bot.send_message(chat_id=update.effective_chat.id,
-                               text="图片信息：\n"
-                                    "作者：" + str(author)
+                               text=user + "\n：图片信息：\n"
+                                           "作者：" + str(author)
                                     + "\n图片PID：" + str(pid)
                                     + "\n图片标题：" + str(title)
                                     + "\n是否R18：" + is_r)
         query.bot.send_photo(chat_id=update.effective_chat.id,
                              photo=url)
     except Exception as e:
+        user = update.effective_user.name
         query.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="服务器错误，错误原因：" + str(e) + "\n请自行访问链接：" + url
+            text=user + "：服务器错误，错误原因：" + str(e) + "\n请自行访问链接：" + url
         )
     return ConversationHandler.END
 
 
 def cancel(update: Update, _: CallbackContext) -> int:
+    user = update.effective_user.name
     update.message.reply_text(
-        '命令结束'
+        user + '：命令结束'
     )
     return ConversationHandler.END
 
@@ -158,8 +172,9 @@ def sentence_input(update: Update, _: CallbackContext) -> int:
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
+    user = update.effective_user.name
     update.message.reply_text(
-        '请选择类型',
+        user + '：请选择类型',
         reply_markup=reply_markup,
     )
     return SENTENCE
@@ -192,19 +207,22 @@ def sentence(update: Update, _: CallbackContext) -> None:
         author = json_res['from_who']
         if author == "null" or author is None:
             author = "匿名"
+        user = update.effective_user.name
         query.bot.send_message(chat_id=update.effective_chat.id,
-                               text="类型：" + type_name + "\n" + s + "\n作者：" + author)
+                               text=user + "\n：类型：" + type_name + "\n" + s + "\n作者：" + author)
     except Exception as e:
+        user = update.effective_user.name
         query.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="服务器错误，错误原因" + str(e)
+            text=user + "：服务器错误，错误原因" + str(e)
         )
     return ConversationHandler.END
 
 
 def cancel(update: Update, _: CallbackContext) -> int:
+    user = update.effective_user.name
     update.message.reply_text(
-        '命令结束'
+        user + '：命令结束'
     )
     return ConversationHandler.END
 
@@ -229,15 +247,17 @@ def zhihu(update, context):
         title = json_str["stories"][index]["title"]
         url = json_str["stories"][index]["url"]
         localtime = time.asctime(time.localtime(time.time()))
+        user = update.effective_user.name
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='北京时间:' + localtime + " 知乎日报"
+            text=user + '：北京时间:' + localtime + " 知乎日报"
                  + "\n文章标题：" + title
                  + "\n文章链接：" + url)
     except Exception as e:
+        user = update.effective_user.name
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="服务器错误，错误原因：" + str(e)
+            text=user + "：服务器错误，错误原因：" + str(e)
         )
 
 
@@ -258,9 +278,10 @@ def bili(update, context):
         link = json_res["data"]["list"][0]["short_link"]
         bv = json_res["data"]["list"][0]["bvid"]
         localtime = time.asctime(time.localtime(time.time()))
+        user = update.effective_user.name
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='北京时间:' + localtime + "\n哔哩哔哩随机热门第" + index + "："
+            text=user + '：北京时间:' + localtime + "\n哔哩哔哩随机热门第" + index + "："
                  + "\n视频标题：" + title
                  + "\nUP主：" + up
                  + "\nBV号：" + bv
@@ -268,9 +289,10 @@ def bili(update, context):
         context.bot.send_photo(
             chat_id=update.effective_chat.id, photo=pic)
     except Exception as e:
+        user = update.effective_user.name
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="服务器错误，错误原因：" + str(e)
+            text=user + "：服务器错误，错误原因：" + str(e)
         )
 
 
@@ -291,13 +313,15 @@ def weibo(update, context):
                 res += ("热搜第" + str(i) + "：" + soup.find_all("td", class_="td-02")[i].a.get_text() + '\n')
         localtime = time.asctime(time.localtime(time.time()))
         res += ('北京时间:' + localtime)
+        user = update.effective_user.name
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=res)
+            text=user + "：\n" + res)
     except Exception as e:
+        user = update.effective_user.name
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="服务器错误，错误原因：" + str(e)
+            text=user + "：服务器错误，错误原因：" + str(e)
         )
 
 
@@ -314,8 +338,9 @@ def stock_input(update: Update, _: CallbackContext) -> int:
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
+    user = update.effective_user.name
     update.message.reply_text(
-        '请选择方法',
+        user + '：请选择方法',
         reply_markup=reply_markup,
     )
     return STOCK_FUNC
@@ -326,65 +351,59 @@ def stock_func(update: Update, _: CallbackContext) -> int:
     query.answer()
     query.delete_message()
     if query.data == "自选":
+        keyboard = [
+            [
+                InlineKeyboardButton("添加自选", callback_data='添加自选'),
+                InlineKeyboardButton("删除自选", callback_data='删除自选'),
+            ],
+            [InlineKeyboardButton("查看自选", callback_data='查看自选')],
+            [InlineKeyboardButton("列出全部自选", callback_data='列出全部自选')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        user = update.effective_user.name
         query.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="该功能正在开发中"
+            text=user + "：请选择功能",
+            reply_markup=reply_markup,
         )
         return STOCK_MINE
     elif query.data == "搜索":
+        user = update.effective_user.name
         query.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="请输入搜索词"
+            text=user + "：请输入搜索词"
         )
         return STOCK_SEARCH
 
 
-def stock_mine():
-    pass
-
-
-def stock_search(update: Update, _: CallbackContext) -> int:
-    try:
-        key = update.message.text
-        session = requests.session()
-        session.get("https://xueqiu.com/k?q=" + key, headers=header)
-        res = session.get("https://xueqiu.com/query/v1/search/web/stock.json?q=" + key, headers=header)
-        json_str = res.json()
-        res = json_str['list']
-        flag = 0
+def stock_list_mine(update: Update):
+    query = update.callback_query
+    user_id = update.effective_user.id
+    stocks = sql_funcs.sql_select_all_mine(user_id)
+    if stocks is None:
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：数据库内没有您的自选数据"
+        )
+        return False
+    else:
         keyboard = []
-        for i in res:
-            flag += 1
-            if flag > 5:
-                break
-            describe = i['name'] + "（股票代码" + i['code'] + "）"
-            keyboard.append([InlineKeyboardButton(describe, callback_data=i['code'])])
-        if json_str['count'] == 0:
-            update.message.reply_text(
-                text="无搜索结果"
-            )
-            return ConversationHandler.END
-        text = "获取到的结果共%s个\n请选择一个进行查看\n" % json_str['count']
-        if json_str['count'] > 5:
-            text += "搜索结果过多，仅显示前五条结果"
+        for i in stocks:
+            describe = i[0] + "（股票代码" + i[1] + "）"
+            keyboard.append([InlineKeyboardButton(describe, callback_data=i[1])])
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(
-            text=text,
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：请选择股票",
             reply_markup=reply_markup,
         )
-    except Exception as e:
-        update.message.reply_text(
-            text="服务器错误，错误原因：" + str(e)
-        )
-    return STOCK_SELECT
+        return True
 
 
-def stock_select(update: Update, _: CallbackContext) -> int:
+def display_stock(code, update: Update):
     query = update.callback_query
-    query.answer()
-    query.delete_message()
-    code = query.data
-
     try:
         session = requests.session()
         session.get("https://xueqiu.com/k?q=" + code, headers=header)
@@ -473,21 +492,219 @@ def stock_select(update: Update, _: CallbackContext) -> int:
         text += "振幅：%s%%\n" % amplitude
         text += "市值：%s万\n" % total_price
         text += "总股本：%s万" % total_shares
+        user = update.effective_user.name
         query.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=text
+            text=user + "：\n" + text
         )
     except Exception as e:
+        user = update.effective_user.name
         query.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="服务器错误，错误原因：" + str(e)
+            text=user + "：服务器错误，错误原因：" + str(e)
+        )
+
+
+def display_stock_short(code, update: Update):
+    query = update.callback_query
+    try:
+        session = requests.session()
+        session.get("https://xueqiu.com/k?q=" + code, headers=header)
+        res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + code, headers=header)
+        json_str = res.json()
+        # 股票名
+        name = json_str['data']['items'][0]['quote']['name']
+        # 数据时间
+        dt = json_str['data']['items'][0]['quote']['time']
+        if dt is not None:
+            time_local = time.localtime(dt / 1000)
+            dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+        # 交易状态
+        status = json_str['data']['items'][0]['market']['status']
+
+        # 现价
+        current = json_str['data']['items'][0]['quote']['current']
+        # 昨收
+        end_price = json_str['data']['items'][0]['quote']['last_close']
+        # 跌涨数
+        cost = 0
+        if current is not None and end_price is not None:
+            cost = current - end_price
+        # 跌涨率%
+        rate = 0
+        if cost != None and end_price is not None and cost != 0:
+            rate = cost / end_price
+
+        cost = float(format(cost, ".2f"))
+        if cost > 0:
+            cost = "+" + str(cost)
+        rate = float(format(rate * 100, ".2f"))
+        if rate > 0:
+            rate = "+" + str(rate)
+
+        text = "当地：%s" % dt
+        text += "（%s）\n" % status
+        text += "%s " % name
+        text += "（%s）" % code
+        text += "现价：%s " % current
+        text += "（%s " % cost
+        text += "，%s%%）" % rate
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：\n" + text
+        )
+    except Exception as e:
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：服务器错误，错误原因：" + str(e)
+        )
+
+
+def stock_mine(update: Update, _: CallbackContext) -> int:
+    query = update.callback_query
+    query.answer()
+    query.delete_message()
+    if query.data == "添加自选":
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + ":请输入搜索词"
+        )
+        return STOCK_ADD_MINE
+    elif query.data == "删除自选":
+        if not stock_list_mine(update):
+            return ConversationHandler.END
+        else:
+            return STOCK_DELETE_MINE
+    elif query.data == "查看自选":
+        if not stock_list_mine(update):
+            return ConversationHandler.END
+        else:
+            return STOCK_SELECT
+    elif query.data == "列出全部自选":
+        stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
+        if stocks is None:
+            user = update.effective_user.name
+            query.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=user + "：数据库中没有您的自选信息"
+            )
+        else:
+            for i in stocks:
+                display_stock_short(i[1], update)
+            return ConversationHandler.END
+
+
+def search_func(update: Update):
+    try:
+        key = update.message.text
+        session = requests.session()
+        session.get("https://xueqiu.com/k?q=" + key, headers=header)
+        res = session.get("https://xueqiu.com/query/v1/search/web/stock.json?q=" + key, headers=header)
+        json_str = res.json()
+        res = json_str['list']
+        flag = 0
+        keyboard = []
+        for i in res:
+            flag += 1
+            if flag > 5:
+                break
+            describe = i['name'] + "（股票代码" + i['code'] + "）"
+            keyboard.append([InlineKeyboardButton(describe, callback_data=i['code'])])
+        if json_str['count'] == 0:
+            user = update.effective_user.name
+            update.message.reply_text(
+                text=user + "：无搜索结果"
+            )
+            return ConversationHandler.END
+        text = "获取到的结果共%s个\n请选择一个进行查看\n" % json_str['count']
+        if json_str['count'] > 5:
+            text += "搜索结果过多，仅显示前五条结果"
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        user = update.effective_user.name
+        update.message.reply_text(
+            text=user + "：\n" + text,
+            reply_markup=reply_markup,
+        )
+    except Exception as e:
+        user = update.effective_user.name
+        update.message.reply_text(
+            text=user + ":服务器错误，错误原因：" + str(e)
+        )
+
+
+def add_mine(update: Update, _: CallbackContext) -> int:
+    search_func(update)
+    return STOCK_DO_ADD_MINE
+
+
+def do_add_mine(update: Update, _: CallbackContext) -> None:
+    query = update.callback_query
+    query.answer()
+    query.delete_message()
+    code = query.data
+    user_id = update.effective_user.id
+    session = requests.session()
+    session.get("https://xueqiu.com/k?q=" + code, headers=header)
+    res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + code, headers=header)
+    json_str = res.json()
+    name = json_str['data']['items'][0]['quote']['name']
+    if sql_funcs.sql_insert_mine(user_id, code, name):
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：添加成功"
+        )
+    else:
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：添加失败"
         )
     return ConversationHandler.END
 
 
+def do_delete_mine(update: Update, _: CallbackContext) -> None:
+    query = update.callback_query
+    query.answer()
+    query.delete_message()
+    code = query.data
+    user_id = update.effective_user.id
+    if sql_funcs.sql_delete_mine(user_id, code):
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：删除成功"
+        )
+    else:
+        user = update.effective_user.name
+        query.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：删除成功"
+        )
+    return ConversationHandler.END
+
+
+def stock_search(update: Update, _: CallbackContext) -> int:
+    search_func(update)
+    return STOCK_SELECT
+
+
+def stock_select(update: Update, _: CallbackContext) -> int:
+    query = update.callback_query
+    query.answer()
+    query.delete_message()
+    code = query.data
+    display_stock(code, update)
+    return ConversationHandler.END
+
+
 def cancel(update: Update, _: CallbackContext) -> int:
+    user = update.effective_user.name
     update.message.reply_text(
-        '命令结束'
+        user + '：命令结束'
     )
     return ConversationHandler.END
 
@@ -497,11 +714,84 @@ conv_handler = ConversationHandler(
     states={
         STOCK_FUNC: [CallbackQueryHandler(stock_func, pattern='^(自选|搜索)$')],
         STOCK_SEARCH: [MessageHandler(Filters.text, stock_search)],
-        STOCK_MINE: [],
-        STOCK_SELECT: [CallbackQueryHandler(stock_select)]
+        STOCK_MINE: [CallbackQueryHandler(stock_mine)],
+        STOCK_SELECT: [CallbackQueryHandler(stock_select)],
+        STOCK_ADD_MINE: [MessageHandler(Filters.text, add_mine)],
+        STOCK_DO_ADD_MINE: [CallbackQueryHandler(do_add_mine)],
+        STOCK_DELETE_MINE: [CallbackQueryHandler(do_delete_mine)]
     },
     fallbacks=[CommandHandler('cancel', cancel)],
 )
 
 dispatcher.add_handler(conv_handler)
+
+
+def fast_list_all_mine(update, context):
+    stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
+    if stocks is None:
+        user = update.effective_user.name
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=user + "：数据库中没有您的自选信息"
+        )
+    else:
+        for i in stocks:
+            try:
+                session = requests.session()
+                session.get("https://xueqiu.com/k?q=" + i[1], headers=header)
+                res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + i[1], headers=header)
+                json_str = res.json()
+                # 股票名
+                name = json_str['data']['items'][0]['quote']['name']
+                # 数据时间
+                dt = json_str['data']['items'][0]['quote']['time']
+                if dt is not None:
+                    time_local = time.localtime(dt / 1000)
+                    dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+                # 交易状态
+                status = json_str['data']['items'][0]['market']['status']
+
+                # 现价
+                current = json_str['data']['items'][0]['quote']['current']
+                # 昨收
+                end_price = json_str['data']['items'][0]['quote']['last_close']
+                # 跌涨数
+                cost = 0
+                if current is not None and end_price is not None:
+                    cost = current - end_price
+                # 跌涨率%
+                rate = 0
+                if cost != None and end_price is not None and cost != 0:
+                    rate = cost / end_price
+
+                cost = float(format(cost, ".2f"))
+                if cost > 0:
+                    cost = "+" + str(cost)
+                rate = float(format(rate * 100, ".2f"))
+                if rate > 0:
+                    rate = "+" + str(rate)
+
+                text = "当地：%s" % dt
+                text += "（%s）\n" % status
+                text += "%s " % name
+                text += "（%s）" % i[1]
+                text += "现价：%s " % current
+                text += "（%s " % cost
+                text += "，%s%%）" % rate
+                user = update.effective_user.name
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "：" + text
+                )
+            except Exception as e:
+                user = update.effective_user.name
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "：服务器错误，错误原因：" + str(e)
+                )
+
+
+handler = CommandHandler('stock_mine', fast_list_all_mine)
+dispatcher.add_handler(handler)
+
 updater.start_polling()
