@@ -16,9 +16,10 @@
 1. [简介](#简介)
 2. [接口使用](#接口使用)
 3. [部署](#部署)
-4. [功能](#功能)
-5. [注意](#注意)
-6. [开源许可与免责声明](#开源许可与免责声明)
+4. [自定义模块](#自定义模块)   
+5. [功能](#功能)
+6. [注意](#注意)
+7. [开源许可与免责声明](#开源许可与免责声明)
 
 ## 简介
 
@@ -83,17 +84,22 @@
     2. 使用Git命令将项目克隆到本地，即  
        ```git clone https://github.com/UtopiaXC/Utopia-Bot-For-Telegram.git```
     3. 进入文件夹，即  
-       ```cd Utopia-Bot-For-Telegram```
-    4. 启动nonebot服务，即  
+       ```cd Utopia-Bot-For-Telegram/bot```
+    4. 启动bot服务，即  
        ```python3 bot.py ```
 
 - ### 参数设定
     1. 请在部署机器人前对配置文件中的参数进行修改
-    2. 配置文件：config.py
+    2. 配置文件：bot/config.py
     3. 请按照文件内注释对参数进行修改  
   
 - ### 注意
     1. Bot需要常驻运行，请使用守护进程或screen
+
+## 自定义模块
+由于python-telegram-bot框架提供了非常完整的接口封装，您可以非常快速地添加属于自己的功能模块。  
+如果您想除去本实例的模块，您只需要将module文件夹中的对应文件删除并在bot.py中删除导入包与初始化函数即可  
+您可以参照[官方demo](https://github.com/python-telegram-bot/python-telegram-bot/tree/master/examples)或本实例进行自己的模块的编写
 
 ## 功能
 1. ### 开始与帮助
