@@ -7,7 +7,7 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 import requests
-from bot.bot import (
+from module.utils.consts import (
     SENTENCE,
     cancel
 )

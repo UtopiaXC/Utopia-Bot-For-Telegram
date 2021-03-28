@@ -10,8 +10,8 @@ from telegram.ext import (
     Filters
 )
 import requests
-from bot import bot as sql_funcs
-from bot.bot import (
+import module.utils.sql_funcs as sql_funcs
+from module.utils.consts import (
     STOCK_FUNC,
     STOCK_MINE,
     STOCK_ADD_MINE,

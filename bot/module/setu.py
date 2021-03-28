@@ -7,8 +7,8 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 import requests
-from bot import config
-from bot.bot import (
+import config
+from module.utils.consts import (
     SETU,
     cancel
 )

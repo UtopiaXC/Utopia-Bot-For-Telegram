@@ -1,19 +1,19 @@
 # 导入配置文件
 import config
 # 导入数据库检查
-from bot.module.utils import sql_funcs
+from module.utils import sql_funcs
 # 加载telegram-bot
 from telegram.ext import Updater
 
 # 加载模块
-import bot.module.stocks as stocks
-import bot.module.start as start
-import bot.module.help as help
-import bot.module.setu as setu
-import bot.module.sentence as sentence
-import bot.module.bili as bili
-import bot.module.weibo as weibo
-import bot.module.english as english
+import module.stocks as stocks
+import module.start as start
+import module.help as help
+import module.setu as setu
+import module.sentence as sentence
+import module.bili as bili
+import module.weibo as weibo
+import module.english as english
 
 # 数据库与Token检查
 if not sql_funcs.sql_start_check():
