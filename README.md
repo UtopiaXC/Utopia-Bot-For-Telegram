@@ -32,11 +32,11 @@
 - [x] 一言
 - [x] 涩图自动机
 - [x] 知乎日报
-- [ ] 英语句子（词霸来源）
+- [x] 英语句子（词霸来源）
 - [x] 微博热搜
 - [x] 哔哩哔哩热门视频
 - [ ] 天气查询
-- [ ] 证券
+- [x] 证券
     - [x] 股票实时查询
     - [x] 自选股
     - [x] 基金查询
@@ -87,15 +87,15 @@
     4. 启动nonebot服务，即  
        ```python3 bot.py ```
 
-- - ### 参数设定
+- ### 参数设定
     1. 请在部署机器人前对配置文件中的参数进行修改
     2. 配置文件：config.py
     3. 请按照文件内注释对参数进行修改  
   
-- 注意：Bot需要常驻运行，请使用守护进程或screen
+- ### 注意
+    1. Bot需要常驻运行，请使用守护进程或screen
 
 ## 功能
-请对照简介中的功能进行比对，部分无图片功能用文字描述
 1. ### 开始与帮助
 
    用于显示全部指令并通过Telegram特性来快速进入相关功能
@@ -153,7 +153,7 @@
 
       通过关键字进行股票搜索并展示
 
-      ![stock_search](C:\Users\UtopiaXC\Desktop\pics\stock_search.gif)
+      ![stock_search](pics/stock_search.gif)
 
    2. 功能二：添加自选
 
@@ -161,7 +161,7 @@
 
       通过关键字进行股票搜索并展示
 
-      ![stock_search](C:\Users\UtopiaXC\Desktop\pics\stock_add_mine.gif)
+      ![stock_search](pics/stock_add_mine.gif)
 
    3. 功能三：删除自选
 
@@ -169,7 +169,7 @@
 
       通过关键字进行股票搜索并展示
 
-      ![stock_search](C:\Users\UtopiaXC\Desktop\pics\stock_delete_mine.gif)
+      ![stock_search](pics/stock_delete_mine.gif)
 
    4. 功能四：查看自选股详情
 
@@ -177,7 +177,7 @@
 
       通过关键字进行股票搜索并展示
 
-      ![stock_search](C:\Users\UtopiaXC\Desktop\pics\stock_list_one.gif)
+      ![stock_search](pics/stock_list_one.gif)
 
    5. 功能五：查看全部自选股简报
 
@@ -185,7 +185,7 @@
 
       通过关键字进行股票搜索并展示
 
-      ![stock_search](C:\Users\UtopiaXC\Desktop\pics\stock_list_all.gif)
+      ![stock_search](pics/stock_list_all.gif)
 
    6. 功能六：快速指令查看自选股简报
 
@@ -193,7 +193,7 @@
 
       通过关键字进行股票搜索并展示
 
-      ![stock_search](C:\Users\UtopiaXC\Desktop\pics\stock_fast_list.gif)
+      ![stock_search](pics/stock_fast_list.gif)
 
       
 
@@ -201,7 +201,7 @@
 
 1. 请注意，涩图接口存在R18内容，已添加选择
 3. 如果对Telegram API或python-telegram-bot有疑问，请到原作者Git提Issue
-4. 如果功能中截图无法查看，请使用全局代理后查看s
+4. 如果功能中截图无法查看，请使用全局代理后查看
 
 ## 开源许可与免责声明
 
