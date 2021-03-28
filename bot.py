@@ -40,7 +40,7 @@ header = {
 # 开始功能
 def start(update: Update, context):
     user = update.effective_user.username
-    user="@"+user+"：\n"
+    user = "@" + user + "：\n"
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=user + "欢迎使用Utopia机器人，请使用 /help 查看全部指令"
@@ -54,7 +54,7 @@ dispatcher.add_handler(handler)
 # 指令帮助
 def help(update, context):
     user = update.effective_user.username
-    user="@"+user+"：\n"
+    user = "@" + user + "：\n"
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=user + "/start - 开始\n"
@@ -75,7 +75,17 @@ handler = CommandHandler('help', help)
 dispatcher.add_handler(handler)
 
 
-# 涩图功能
+# 取消命令
+def cancel(update: Update, _: CallbackContext) -> int:
+    user = update.effective_user.username
+    user = "@" + user + "：\n"
+    update.message.reply_text(
+        user + '命令结束'
+    )
+    return ConversationHandler.END
+
+
+# 涩图功能-R18选择器
 def setu_input(update: Update, _: CallbackContext):
     keyboard = [
         [
@@ -85,7 +95,7 @@ def setu_input(update: Update, _: CallbackContext):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     user = update.effective_user.username
-    user="@"+user+"：\n"
+    user = "@" + user + "：\n"
     update.message.reply_text(
         user + '请选择您需要的是R18还是非R18涩图',
         reply_markup=reply_markup,
@@ -93,6 +103,7 @@ def setu_input(update: Update, _: CallbackContext):
     return SETU
 
 
+# 涩图功能-涩图发送
 def setu(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
@@ -119,7 +130,7 @@ def setu(update: Update, _: CallbackContext) -> None:
         if r18 != 0:
             is_r = "是"
         user = update.effective_user.username
-        user="@"+user+"：\n"
+        user = "@" + user + "：\n"
         query.bot.send_message(chat_id=update.effective_chat.id,
                                text=user + "图片信息：\n"
                                            "作者：" + str(author)
@@ -130,20 +141,11 @@ def setu(update: Update, _: CallbackContext) -> None:
                              photo=url)
     except Exception as e:
         user = update.effective_user.username
-        user="@"+user+"：\n"
+        user = "@" + user + "：\n"
         query.bot.send_message(
             chat_id=update.effective_chat.id,
             text=user + "服务器错误，错误原因：" + str(e) + "\n请自行访问链接：" + url
         )
-    return ConversationHandler.END
-
-
-def cancel(update: Update, _: CallbackContext) -> int:
-    user = update.effective_user.username
-    user="@"+user+"：\n"
-    update.message.reply_text(
-        user + '命令结束'
-    )
     return ConversationHandler.END
 
 
@@ -158,8 +160,7 @@ conv_handler = ConversationHandler(
 dispatcher.add_handler(conv_handler)
 
 
-# 一言
-
+# 一言-类型选择器
 def sentence_input(update: Update, _: CallbackContext) -> int:
     keyboard = [
         [
@@ -191,6 +192,7 @@ def sentence_input(update: Update, _: CallbackContext) -> int:
     return SENTENCE
 
 
+# 一言-发送句子
 def sentence(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
@@ -229,15 +231,6 @@ def sentence(update: Update, _: CallbackContext) -> None:
             chat_id=update.effective_chat.id,
             text=user + "服务器错误，错误原因" + str(e)
         )
-    return ConversationHandler.END
-
-
-def cancel(update: Update, _: CallbackContext) -> int:
-    user = update.effective_user.username
-    user = "@" + user + "：\n"
-    update.message.reply_text(
-        user + '命令结束'
-    )
     return ConversationHandler.END
 
 
@@ -281,8 +274,7 @@ handler = CommandHandler('zhihu', zhihu)
 dispatcher.add_handler(handler)
 
 
-# 微博
-
+# BILI热搜
 def bili(update, context):
     try:
         index = str(random.randint(1, 50))
@@ -318,7 +310,7 @@ handler = CommandHandler('bili', bili)
 dispatcher.add_handler(handler)
 
 
-# BILI热搜
+# 微博
 def weibo(update, context):
     try:
         res = requests.get("https://s.weibo.com/top/summary")
@@ -344,6 +336,7 @@ def weibo(update, context):
             text=user + "服务器错误，错误原因：" + str(e)
         )
 
+
 # 每日英语
 def english(update, context):
     try:
@@ -367,8 +360,8 @@ def english(update, context):
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=user + "英文原文：" + english
-                           + "\n翻译：" + chinese
-                           + "\n封面：")
+                 + "\n翻译：" + chinese
+                 + "\n封面：")
         context.bot.send_photo(
             chat_id=update.effective_chat.id,
             photo=pic
@@ -385,11 +378,12 @@ def english(update, context):
             text=user + "服务器错误，错误原因：" + str(e)
         )
 
+
 handler = CommandHandler('english', english)
 dispatcher.add_handler(handler)
 
 
-# 股票
+# 股票-功能选择器
 def stock_input(update: Update, _: CallbackContext) -> int:
     keyboard = [
         [
@@ -407,6 +401,7 @@ def stock_input(update: Update, _: CallbackContext) -> int:
     return STOCK_FUNC
 
 
+# 股票-自选功能选择器
 def stock_func(update: Update, _: CallbackContext) -> int:
     query = update.callback_query
     query.answer()
@@ -439,6 +434,7 @@ def stock_func(update: Update, _: CallbackContext) -> int:
         return STOCK_SEARCH
 
 
+# 股票-自选股查看器
 def stock_list_mine(update: Update):
     query = update.callback_query
     user_id = update.effective_user.id
@@ -467,6 +463,7 @@ def stock_list_mine(update: Update):
         return True
 
 
+# 股票-股票信息打印函数
 def display_stock(code, update: Update):
     query = update.callback_query
     try:
@@ -572,6 +569,7 @@ def display_stock(code, update: Update):
         )
 
 
+# 股票-股票简报打印函数
 def display_stock_short(code, update: Update):
     query = update.callback_query
     try:
@@ -631,6 +629,7 @@ def display_stock_short(code, update: Update):
         )
 
 
+# 股票-自选功能选择器
 def stock_mine(update: Update, _: CallbackContext) -> int:
     query = update.callback_query
     query.answer()
@@ -668,6 +667,7 @@ def stock_mine(update: Update, _: CallbackContext) -> int:
             return ConversationHandler.END
 
 
+# 股票-股票查找器
 def search_func(update: Update):
     try:
         key = update.message.text
@@ -709,11 +709,13 @@ def search_func(update: Update):
         )
 
 
+# 股票-自选股添加选择器
 def add_mine(update: Update, _: CallbackContext) -> int:
     search_func(update)
     return STOCK_DO_ADD_MINE
 
 
+# 股票-自选股添加器
 def do_add_mine(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
@@ -742,6 +744,7 @@ def do_add_mine(update: Update, _: CallbackContext) -> None:
     return ConversationHandler.END
 
 
+# 股票-自选股删除器
 def do_delete_mine(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
@@ -765,26 +768,19 @@ def do_delete_mine(update: Update, _: CallbackContext) -> None:
     return ConversationHandler.END
 
 
+# 股票-搜索功能
 def stock_search(update: Update, _: CallbackContext) -> int:
     search_func(update)
     return STOCK_SELECT
 
 
+# 股票-查看搜索结果股票信息
 def stock_select(update: Update, _: CallbackContext) -> int:
     query = update.callback_query
     query.answer()
     query.delete_message()
     code = query.data
     display_stock(code, update)
-    return ConversationHandler.END
-
-
-def cancel(update: Update, _: CallbackContext) -> int:
-    user = update.effective_user.username
-    user = "@" + user + "：\n"
-    update.message.reply_text(
-        user + '命令结束'
-    )
     return ConversationHandler.END
 
 
@@ -805,6 +801,7 @@ conv_handler = ConversationHandler(
 dispatcher.add_handler(conv_handler)
 
 
+# 股票-快速简报打印器
 def fast_list_all_mine(update, context):
     stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
     if stocks is None:
