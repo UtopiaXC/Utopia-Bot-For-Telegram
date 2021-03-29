@@ -66,14 +66,16 @@
 5. 微博热搜：暂时由爬虫实现  
    一个无害的小型的网页爬虫。
 6. 哔哩哔哩热门视频：[哔哩哔哩官方接口](https://api.bilibili.com/x/web-interface/popular?ps=1&pn=1)  
-   哔哩哔哩的官方热榜接口。此处需要注意的是ps为每次获取的视频信息个数，pn为起始视频的实时热榜排名。因此在机器人中pn为1~50随机生成的来保证每次都能取到前50内不同的视频
+   哔哩哔哩的官方热榜接口。   
+   此处需要注意的是ps为每次获取的视频信息个数，pn为起始视频的实时热榜排名。  
+   因此在机器人中pn为1~50随机生成的来保证每次都能取到前50内不同的视频
 7. 股票接口：[雪球](https://xueqiu.com/)  
     通过调用雪球搜索接口获取cookie维持session后访问数据接口。
 ## 部署
 
 - ### 部署Python环境
     1. 项目需要Python3，请保证您的服务器Python版本正确
-    2. 需要安装库：python-telegram-bot（框架）、requests（用于爬虫请求）、beautifulsoup4（用于爬虫页面分析）
+    2. 需要安装库：python-telegram-bot（框架）、requests（用于爬虫请求）、beautifulsoup4（用于爬虫页面分析）  
         ```pip install python-telegram-bot requests beautifulsoup4``` 
 
 - ### 部署 Utopia Bot
