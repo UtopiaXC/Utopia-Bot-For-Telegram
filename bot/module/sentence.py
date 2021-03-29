@@ -37,8 +37,8 @@ def add_sentence_plugin(dispatcher):
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        user = update.effective_user.username
-        user = "@" + user + "：\n"
+        user = update.effective_user.name+"：\n"
+
         update.message.reply_text(
             user + '请选择类型',
             reply_markup=reply_markup,
@@ -73,13 +73,13 @@ def add_sentence_plugin(dispatcher):
             author = json_res['from_who']
             if author == "null" or author is None:
                 author = "匿名"
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             query.bot.send_message(chat_id=update.effective_chat.id,
                                    text=user + "类型：" + type_name + "\n" + s + "\n作者：" + author)
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因" + str(e)

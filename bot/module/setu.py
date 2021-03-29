@@ -24,8 +24,8 @@ def add_setu_plugin(dispatcher):
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        user = update.effective_user.username
-        user = "@" + user + "：\n"
+        user = update.effective_user.name+"：\n"
+
         update.message.reply_text(
             user + '请选择您需要的是R18还是非R18涩图',
             reply_markup=reply_markup,
@@ -45,8 +45,8 @@ def add_setu_plugin(dispatcher):
             res = requests.get("https://api.lolicon.app/setu/?r18=" + str(r18) + "&apikey=" + config.setu_Token)
             json_str = json.loads(res.text)
             if json_str['code'] == 401:
-                user = update.effective_user.username
-                user = "@" + user + "：\n"
+                user = update.effective_user.name+"：\n"
+
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=user + "API接口超过调用限制（每令牌每天限制300）或API令牌被封禁"
@@ -58,8 +58,8 @@ def add_setu_plugin(dispatcher):
             is_r = "否"
             if r18 != 0:
                 is_r = "是"
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             query.bot.send_message(chat_id=update.effective_chat.id,
                                    text=user + "图片信息：\n"
                                                "作者：" + str(author)
@@ -69,8 +69,8 @@ def add_setu_plugin(dispatcher):
             query.bot.send_photo(chat_id=update.effective_chat.id,
                                  photo=url)
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e) + "\n请自行访问链接：" + url

@@ -29,8 +29,8 @@ def add_english_plugin(dispatcher):
             english = json_str["content"]
             pic = json_str["picture2"]
             voice = json_str["tts"]
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "英文原文：" + english
@@ -45,8 +45,8 @@ def add_english_plugin(dispatcher):
                 voice=voice
             )
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e)

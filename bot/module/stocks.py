@@ -34,8 +34,8 @@ def add_stock_plugin(dispatcher):
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        user = update.effective_user.username
-        user = "@" + user + "：\n"
+        user = update.effective_user.name + "：\n"
+
         update.message.reply_text(
             user + '请选择方法',
             reply_markup=reply_markup,
@@ -57,8 +57,8 @@ def add_stock_plugin(dispatcher):
                 [InlineKeyboardButton("列出全部自选", callback_data='列出全部自选')]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "请选择功能",
@@ -66,8 +66,8 @@ def add_stock_plugin(dispatcher):
             )
             return STOCK_MINE
         elif query.data == "搜索":
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "请输入搜索词"
@@ -80,8 +80,8 @@ def add_stock_plugin(dispatcher):
         user_id = update.effective_user.id
         stocks = sql_funcs.sql_select_all_mine(user_id)
         if stocks is None:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "数据库内没有您的自选数据"
@@ -93,8 +93,8 @@ def add_stock_plugin(dispatcher):
                 describe = i[0] + "（股票代码" + i[1] + "）"
                 keyboard.append([InlineKeyboardButton(describe, callback_data=i[1])])
             reply_markup = InlineKeyboardMarkup(keyboard)
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "请选择股票",
@@ -193,15 +193,15 @@ def add_stock_plugin(dispatcher):
             text += "振幅：%s%%\n" % amplitude
             text += "市值：%s万\n" % total_price
             text += "总股本：%s万" % total_shares
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + text
             )
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e)
@@ -252,15 +252,14 @@ def add_stock_plugin(dispatcher):
             text += "现价：%s " % current
             text += "（%s " % cost
             text += "，%s%%）" % rate
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + text
             )
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e)
@@ -272,8 +271,8 @@ def add_stock_plugin(dispatcher):
         query.answer()
         query.delete_message()
         if query.data == "添加自选":
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "请输入搜索词"
@@ -292,8 +291,8 @@ def add_stock_plugin(dispatcher):
         elif query.data == "列出全部自选":
             stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
             if stocks is None:
-                user = update.effective_user.username
-                user = "@" + user + "：\n"
+                user = update.effective_user.name + "：\n"
+
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=user + "数据库中没有您的自选信息"
@@ -321,8 +320,8 @@ def add_stock_plugin(dispatcher):
                 describe = i['name'] + "（股票代码" + i['code'] + "）"
                 keyboard.append([InlineKeyboardButton(describe, callback_data=i['code'])])
             if json_str['count'] == 0:
-                user = update.effective_user.username
-                user = "@" + user + "：\n"
+                user = update.effective_user.name + "：\n"
+
                 update.message.reply_text(
                     text=user + "无搜索结果"
                 )
@@ -331,15 +330,15 @@ def add_stock_plugin(dispatcher):
             if json_str['count'] > 5:
                 text += "搜索结果过多，仅显示前五条结果"
             reply_markup = InlineKeyboardMarkup(keyboard)
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             update.message.reply_text(
                 text=user + text,
                 reply_markup=reply_markup,
             )
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             update.message.reply_text(
                 text=user + "服务器错误，错误原因：" + str(e)
             )
@@ -362,15 +361,15 @@ def add_stock_plugin(dispatcher):
         json_str = res.json()
         name = json_str['data']['items'][0]['quote']['name']
         if sql_funcs.sql_insert_mine(user_id, code, name):
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "添加成功"
             )
         else:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "添加失败"
@@ -385,15 +384,15 @@ def add_stock_plugin(dispatcher):
         code = query.data
         user_id = update.effective_user.id
         if sql_funcs.sql_delete_mine(user_id, code):
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "删除成功"
             )
         else:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "删除成功"
@@ -434,8 +433,8 @@ def add_stock_plugin(dispatcher):
     def fast_list_all_mine(update, context):
         stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
         if stocks is None:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name + "：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "数据库中没有您的自选信息"
@@ -481,19 +480,19 @@ def add_stock_plugin(dispatcher):
                     text = "当地：%s" % dt
                     text += "（%s）\n" % status
                     text += "%s " % name
-                    text += "（%s）" % i[1]
+                    text += "（%s）\n" % i[1]
                     text += "现价：%s " % current
                     text += "（%s " % cost
                     text += "，%s%%）" % rate
-                    user = update.effective_user.username
-                    user = "@" + user + "：\n"
+                    user = update.effective_user.name + "：\n"
+
                     context.bot.send_message(
                         chat_id=update.effective_chat.id,
                         text=user + text
                     )
                 except Exception as e:
-                    user = update.effective_user.username
-                    user = "@" + user + "：\n"
+                    user = update.effective_user.name + "：\n"
+
                     context.bot.send_message(
                         chat_id=update.effective_chat.id,
                         text=user + "服务器错误，错误原因：" + str(e)

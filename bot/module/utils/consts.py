@@ -11,8 +11,8 @@ header = {
 
 
 def cancel(update: Update, _: CallbackContext) -> int:
-    user = update.effective_user.username
-    user = "@" + user + "：\n"
+    user = update.effective_user.name+"：\n"
+
     update.message.reply_text(
         user + '命令结束'
     )

@@ -21,14 +21,14 @@ def add_weibo_plugin(dispatcher):
                     res += ("热搜第" + str(i) + "：" + soup.find_all("td", class_="td-02")[i].a.get_text() + '\n')
             localtime = time.asctime(time.localtime(time.time()))
             res += ('北京时间:' + localtime)
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + res)
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e)

@@ -6,7 +6,7 @@ import requests
 from telegram.ext import (
     CommandHandler
 )
-
+from module.utils.consts import header
 
 def add_zhihu_plugin(dispatcher):
     # 知乎日报
@@ -18,16 +18,15 @@ def add_zhihu_plugin(dispatcher):
             title = json_str["stories"][index]["title"]
             url = json_str["stories"][index]["url"]
             localtime = time.asctime(time.localtime(time.time()))
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + '北京时间:' + localtime + " 知乎日报"
                      + "\n文章标题：" + title
                      + "\n文章链接：" + url)
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e)

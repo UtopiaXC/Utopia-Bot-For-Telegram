@@ -21,8 +21,8 @@ def add_bili_plugin(dispatcher):
             link = json_res["data"]["list"][0]["short_link"]
             bv = json_res["data"]["list"][0]["bvid"]
             localtime = time.asctime(time.localtime(time.time()))
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + '北京时间:' + localtime + "\n哔哩哔哩随机热门第" + index + "："
@@ -33,8 +33,8 @@ def add_bili_plugin(dispatcher):
             context.bot.send_photo(
                 chat_id=update.effective_chat.id, photo=pic)
         except Exception as e:
-            user = update.effective_user.username
-            user = "@" + user + "：\n"
+            user = update.effective_user.name+"：\n"
+
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "服务器错误，错误原因：" + str(e)
