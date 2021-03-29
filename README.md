@@ -199,14 +199,14 @@
       通过关键字进行股票搜索并展示
 
       ![stock_search](pics/stock_fast_list.gif)
-
-      
+    
 
 ## 注意
 
 1. 请注意，涩图接口存在R18内容，已添加选择
-3. 如果对Telegram API或python-telegram-bot有疑问，请到原作者Git提Issue
-4. 如果功能中截图无法查看，请使用全局代理后查看
+2. 如果对Telegram API或python-telegram-bot有疑问，请到原作者Git提Issue
+3. 如果功能中截图无法查看，请使用全局代理后查看
+4. 因为我比较懒，所以日志都是随便写的，看不惯建议自己改
 
 ## 开源许可与免责声明
 

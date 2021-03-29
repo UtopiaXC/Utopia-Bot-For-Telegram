@@ -18,6 +18,8 @@ import module.sentence as sentence
 import module.bili as bili
 import module.weibo as weibo
 import module.english as english
+import module.zhihu as zhihu
+import module.get_me as get_me
 
 logger_start_check()
 info("主进程：日志文件检查完成")
@@ -33,6 +35,10 @@ if config.Token == "":
     error("主进程：配置文件错误，请先在config.py中输入对应Token后使用")
     warning("主进程：程序由于异常导致退出")
     exit(1)
+
+if len(config.admin_id) == 0:
+    warning("您未添加管理员，管理员功能将不可用")
+
 info("主进程：配置文件检查完成")
 
 # 初始化Telegram-Bot
@@ -48,6 +54,8 @@ sentence.add_sentence_plugin(dispatcher)
 bili.add_bili_plugin(dispatcher)
 weibo.add_weibo_plugin(dispatcher)
 english.add_english_plugin(dispatcher)
+zhihu.add_zhihu_plugin(dispatcher)
+get_me.add_get_me_plugin(dispatcher)
 
 # 启动消息监听
 updater.start_polling()
