@@ -7,12 +7,10 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 import requests
-from module.utils.consts import (
-    SENTENCE,
-    cancel
-)
+from module.utils.consts import cancel
 from module.utils.logger import info, warning, error
 
+SENTENCE=0
 
 def add_sentence_plugin(dispatcher):
     # 一言-类型选择器

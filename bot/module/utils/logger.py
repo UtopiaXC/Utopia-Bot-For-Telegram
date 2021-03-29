@@ -1,5 +1,6 @@
 import time
 import os
+import zipfile
 
 import logging
 def get_logger(level):
@@ -71,3 +72,16 @@ def logger_start_check():
             os.makedirs(path)
     except Exception as e:
         error(e.args)
+
+
+def compress_file(zip_filename, dirname):
+    if os.path.isfile(dirname):
+        with zipfile.ZipFile(zip_filename, 'w') as z:
+            z.write(dirname)
+    else:
+        with zipfile.ZipFile(zip_filename, 'w') as z:
+            for root, dirs, files in os.walk(dirname):
+                for single_file in files:
+                    if single_file != zip_filename:
+                        filepath = os.path.join(root, single_file)
+                        z.write(filepath)

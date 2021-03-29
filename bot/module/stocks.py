@@ -11,18 +11,18 @@ from telegram.ext import (
 )
 import requests
 import module.utils.sql_funcs as sql_funcs
-from module.utils.consts import (
-    STOCK_FUNC,
-    STOCK_MINE,
-    STOCK_ADD_MINE,
-    STOCK_DO_ADD_MINE,
-    STOCK_DELETE_MINE,
-    STOCK_SEARCH,
-    STOCK_SELECT,
-    header,
-    cancel
-)
+from module.utils.consts import header, cancel
+from config import max_mine_stock
+
 from module.utils.logger import info, warning, error
+
+STOCK_FUNC, \
+STOCK_MINE, \
+STOCK_ADD_MINE, \
+STOCK_DO_ADD_MINE, \
+STOCK_DELETE_MINE, \
+STOCK_SEARCH, \
+STOCK_SELECT = range(7)
 
 
 def add_stock_plugin(dispatcher):
@@ -310,8 +310,8 @@ def add_stock_plugin(dispatcher):
             query.delete_message()
             if query.data == "添加自选":
                 user = update.effective_user.name + "：\n"
-                info("股票模块-自选股功能-自选股功能选择处理器：用户"+
-                     update.effective_user.name+
+                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
+                     update.effective_user.name +
                      "选择添加一条自选")
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
@@ -464,7 +464,7 @@ def add_stock_plugin(dispatcher):
 
     # 股票-自选股添加选择器
     def add_mine(update: Update, _: CallbackContext) -> int:
-        info("用户"+update.effective_user.name+"选择了添加自选")
+        info("用户" + update.effective_user.name + "选择了添加自选")
         search_func(update)
         return STOCK_DO_ADD_MINE
 
@@ -474,7 +474,7 @@ def add_stock_plugin(dispatcher):
         query.answer()
         query.delete_message()
         code = query.data
-        info("用户" + update.effective_user.name + "添加了一条自选，代码为：" +code)
+        info("用户" + update.effective_user.name + "添加了一条自选，代码为：" + code)
         user_id = update.effective_user.id
         session = requests.session()
         session.get("https://xueqiu.com/k?q=" + code, headers=header)
@@ -493,7 +493,7 @@ def add_stock_plugin(dispatcher):
             warning("用户" + update.effective_user.name + "添加自选失败，代码为：" + code)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=user + "添加失败"
+                text=user + "添加失败，您可能已经添加该股票或您已经达到自选添加上限。（上限为%s）" % max_mine_stock
             )
         return ConversationHandler.END
 

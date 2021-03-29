@@ -8,12 +8,10 @@ from telegram.ext import (
 )
 import requests
 import config
-from module.utils.consts import (
-    SETU,
-    cancel
-)
+from module.utils.consts import cancel
 from module.utils.logger import info, warning, error
 
+SETU = 0
 
 def add_setu_plugin(dispatcher):
     # 涩图功能-R18选择器

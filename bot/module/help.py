@@ -23,7 +23,8 @@ def add_help_plugin(dispatcher):
                             "/zhihu - 随机获取一条知乎日报\n"
                             "/bili - 随机获取一条bilibili热榜视频\n"
                             "/english - 随机获取一条每日英语\n"
-                            "/get_me - 获取自己的ID"
+                            "/get_me - 获取自己的ID\n"
+                            "/admin - 管理员功能"
             )
         except:
             error("帮助模块异常")

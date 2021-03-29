@@ -20,6 +20,7 @@ import module.weibo as weibo
 import module.english as english
 import module.zhihu as zhihu
 import module.get_me as get_me
+import module.admin as admin
 
 logger_start_check()
 info("主进程：日志文件检查完成")
@@ -56,6 +57,7 @@ weibo.add_weibo_plugin(dispatcher)
 english.add_english_plugin(dispatcher)
 zhihu.add_zhihu_plugin(dispatcher)
 get_me.add_get_me_plugin(dispatcher)
+admin.add_admin_plugin(dispatcher)
 
 # 启动消息监听
 updater.start_polling()
