@@ -68,9 +68,7 @@
    一个无害的小型的网页爬虫。
 6. 哔哩哔哩热门视频：[哔哩哔哩官方接口](https://api.bilibili.com/x/web-interface/popular?ps=1&pn=1)  
    哔哩哔哩的官方热榜接口。此处需要注意的是ps为每次获取的视频信息个数，pn为起始视频的实时热榜排名。因此在机器人中pn为1~50随机生成的来保证每次都能取到前50内不同的视频
-7. 天气接口：[wttr.in](https://wttr.in/)  
-    参考[luciabot](https://github.com/Box-s-ville/luciabot)的天气实现
-8. 股票接口：[雪球](https://xueqiu.com/)  
+7. 股票接口：[雪球](https://xueqiu.com/)  
     通过调用雪球搜索接口获取cookie维持session后访问数据接口。
 ## 部署
 

@@ -22,85 +22,178 @@ from module.utils.consts import (
     header,
     cancel
 )
+from module.utils.logger import info, warning, error
 
 
 def add_stock_plugin(dispatcher):
+    # 股票-快速简报打印器
+    def fast_list_all_mine(update, context):
+        try:
+            stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
+            if stocks is None:
+                user = update.effective_user.name + "：\n"
+                text = user + "数据库中没有您的自选信息"
+                warning("股票模块-快速打印简报方法：" + text)
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=text
+                )
+            else:
+                text = ""
+                for i in stocks:
+                    try:
+                        session = requests.session()
+                        session.get("https://xueqiu.com/k?q=" + i[1], headers=header)
+                        res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + i[1],
+                                          headers=header)
+                        json_str = res.json()
+                        # 股票名
+                        name = json_str['data']['items'][0]['quote']['name']
+                        # 数据时间
+                        dt = json_str['data']['items'][0]['quote']['time']
+                        if dt is not None:
+                            time_local = time.localtime(dt / 1000)
+                            dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+                        # 交易状态
+                        status = json_str['data']['items'][0]['market']['status']
+
+                        # 现价
+                        current = json_str['data']['items'][0]['quote']['current']
+                        # 昨收
+                        end_price = json_str['data']['items'][0]['quote']['last_close']
+                        # 跌涨数
+                        cost = 0
+                        if current is not None and end_price is not None:
+                            cost = current - end_price
+                        # 跌涨率%
+                        rate = 0
+                        if cost is not None and end_price is not None and cost != 0:
+                            rate = cost / end_price
+
+                        cost = float(format(cost, ".2f"))
+                        if cost > 0:
+                            cost = "+" + str(cost)
+                        rate = float(format(rate * 100, ".2f"))
+                        if rate > 0:
+                            rate = "+" + str(rate)
+
+                        text += "%s" % dt
+                        text += "（%s）\n" % status
+                        text += "%s " % name
+                        text += "（%s）\n" % i[1]
+                        text += "现价：%s " % current
+                        text += "（%s " % cost
+                        text += "，%s%%）\n\n" % rate
+
+                    except Exception as e:
+                        user = update.effective_user.name + "：\n"
+                        text = user + "服务器错误，错误原因：" + str(e)
+                        error("股票模块-快速打印简报方法：" + text)
+                        context.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=text
+                        )
+                        return
+                info("股票模块-快速打印简报方法：成功获取用户" + update.effective_user.name +
+                     "的" + str(len(stocks)) + "条股票数据")
+                user = update.effective_user.name + "：\n"
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + text
+                )
+        except:
+            error("股票模块-快速打印简报方法异常")
+
+    handler = CommandHandler('stock_mine', fast_list_all_mine)
+    dispatcher.add_handler(handler)
+
     # 股票-功能选择器
     def stock_input(update: Update, _: CallbackContext) -> int:
-        keyboard = [
-            [
-                InlineKeyboardButton("自选", callback_data='自选'),
-                InlineKeyboardButton("搜索", callback_data='搜索'),
+        try:
+            keyboard = [
+                [
+                    InlineKeyboardButton("自选", callback_data='自选'),
+                    InlineKeyboardButton("搜索", callback_data='搜索'),
+                ]
             ]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        user = update.effective_user.name + "：\n"
-
-        update.message.reply_text(
-            user + '请选择方法',
-            reply_markup=reply_markup,
-        )
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            user = update.effective_user.name + "：\n"
+            info("股票模块-方法选择器：" + update.effective_user.name + "开始了股票功能")
+            update.message.reply_text(
+                user + '请选择方法',
+                reply_markup=reply_markup,
+            )
+        except:
+            error("股票模块-方法选择器异常")
         return STOCK_FUNC
 
     # 股票-自选功能选择器
     def stock_func(update: Update, _: CallbackContext) -> int:
-        query = update.callback_query
-        query.answer()
-        query.delete_message()
-        if query.data == "自选":
-            keyboard = [
-                [
-                    InlineKeyboardButton("添加自选", callback_data='添加自选'),
-                    InlineKeyboardButton("删除自选", callback_data='删除自选'),
-                ],
-                [InlineKeyboardButton("查看自选", callback_data='查看自选')],
-                [InlineKeyboardButton("列出全部自选", callback_data='列出全部自选')]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            user = update.effective_user.name + "：\n"
-
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "请选择功能",
-                reply_markup=reply_markup,
-            )
-            return STOCK_MINE
-        elif query.data == "搜索":
-            user = update.effective_user.name + "：\n"
-
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "请输入搜索词"
-            )
-            return STOCK_SEARCH
+        try:
+            query = update.callback_query
+            query.answer()
+            query.delete_message()
+            if query.data == "自选":
+                info("股票模块-功能选择器：" + update.effective_user.name + "选择了自选功能")
+                keyboard = [
+                    [
+                        InlineKeyboardButton("添加自选", callback_data='添加自选'),
+                        InlineKeyboardButton("删除自选", callback_data='删除自选'),
+                    ],
+                    [InlineKeyboardButton("查看自选", callback_data='查看自选')],
+                    [InlineKeyboardButton("列出全部自选", callback_data='列出全部自选')]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                user = update.effective_user.name + "：\n"
+                query.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "请选择功能",
+                    reply_markup=reply_markup,
+                )
+                return STOCK_MINE
+            elif query.data == "搜索":
+                user = update.effective_user.name + "：\n"
+                info("股票模块-功能选择器：" + update.effective_user.name + "选择了搜索功能")
+                query.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "请输入搜索词"
+                )
+                return STOCK_SEARCH
+        except:
+            error("股票模块-自选功能选择器异常")
+            return ConversationHandler.END
 
     # 股票-自选股查看器
     def stock_list_mine(update: Update):
-        query = update.callback_query
-        user_id = update.effective_user.id
-        stocks = sql_funcs.sql_select_all_mine(user_id)
-        if stocks is None:
-            user = update.effective_user.name + "：\n"
+        try:
+            query = update.callback_query
+            user_id = update.effective_user.id
+            stocks = sql_funcs.sql_select_all_mine(user_id)
+            if stocks is None:
+                user = update.effective_user.name + "：\n"
+                warning("股票模块-自选功能-股票选择器：" + update.effective_user.name + "：数据库中无自选股")
+                query.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "数据库内没有您的自选数据"
+                )
+                return False
+            else:
+                keyboard = []
+                for i in stocks:
+                    describe = i[0] + "（股票代码" + i[1] + "）"
+                    keyboard.append([InlineKeyboardButton(describe, callback_data=i[1])])
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                user = update.effective_user.name + "：\n"
 
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "数据库内没有您的自选数据"
-            )
+                query.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "请选择股票",
+                    reply_markup=reply_markup,
+                )
+                return True
+        except:
+            error("股票模块-自选模块-股票选择器异常")
             return False
-        else:
-            keyboard = []
-            for i in stocks:
-                describe = i[0] + "（股票代码" + i[1] + "）"
-                keyboard.append([InlineKeyboardButton(describe, callback_data=i[1])])
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            user = update.effective_user.name + "：\n"
-
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "请选择股票",
-                reply_markup=reply_markup,
-            )
-            return True
 
     # 股票-股票信息打印函数
     def display_stock(code, update: Update):
@@ -194,113 +287,139 @@ def add_stock_plugin(dispatcher):
             text += "市值：%s万\n" % total_price
             text += "总股本：%s万" % total_shares
             user = update.effective_user.name + "：\n"
-
+            info("股票模块-自选股-自选股具体信息：用户" + update.effective_user.name +
+                 "打印了一条股票具体信息，股票代码：" + code)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + text
             )
         except Exception as e:
             user = update.effective_user.name + "：\n"
-
+            text = user + "服务器错误，错误原因：" + str(e)
+            error("股票模块-自选股-自选股具体信息：" + text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=user + "服务器错误，错误原因：" + str(e)
-            )
-
-    # 股票-股票简报打印函数
-    def display_stock_short(code, update: Update):
-        query = update.callback_query
-        try:
-            session = requests.session()
-            session.get("https://xueqiu.com/k?q=" + code, headers=header)
-            res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + code, headers=header)
-            json_str = res.json()
-            # 股票名
-            name = json_str['data']['items'][0]['quote']['name']
-            # 数据时间
-            dt = json_str['data']['items'][0]['quote']['time']
-            if dt is not None:
-                time_local = time.localtime(dt / 1000)
-                dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
-            # 交易状态
-            status = json_str['data']['items'][0]['market']['status']
-
-            # 现价
-            current = json_str['data']['items'][0]['quote']['current']
-            # 昨收
-            end_price = json_str['data']['items'][0]['quote']['last_close']
-            # 跌涨数
-            cost = 0
-            if current is not None and end_price is not None:
-                cost = current - end_price
-            # 跌涨率%
-            rate = 0
-            if cost is not None and end_price is not None and cost != 0:
-                rate = cost / end_price
-
-            cost = float(format(cost, ".2f"))
-            if cost > 0:
-                cost = "+" + str(cost)
-            rate = float(format(rate * 100, ".2f"))
-            if rate > 0:
-                rate = "+" + str(rate)
-
-            text = "当地：%s" % dt
-            text += "（%s）\n" % status
-            text += "%s " % name
-            text += "（%s）\n" % code
-            text += "现价：%s " % current
-            text += "（%s " % cost
-            text += "，%s%%）" % rate
-            user = update.effective_user.name + "：\n"
-
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + text
-            )
-        except Exception as e:
-            user = update.effective_user.name + "：\n"
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "服务器错误，错误原因：" + str(e)
+                text=text
             )
 
     # 股票-自选功能选择器
     def stock_mine(update: Update, _: CallbackContext) -> int:
-        query = update.callback_query
-        query.answer()
-        query.delete_message()
-        if query.data == "添加自选":
-            user = update.effective_user.name + "：\n"
-
-            query.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "请输入搜索词"
-            )
-            return STOCK_ADD_MINE
-        elif query.data == "删除自选":
-            if not stock_list_mine(update):
-                return ConversationHandler.END
-            else:
-                return STOCK_DELETE_MINE
-        elif query.data == "查看自选":
-            if not stock_list_mine(update):
-                return ConversationHandler.END
-            else:
-                return STOCK_SELECT
-        elif query.data == "列出全部自选":
-            stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
-            if stocks is None:
+        try:
+            query = update.callback_query
+            query.answer()
+            query.delete_message()
+            if query.data == "添加自选":
                 user = update.effective_user.name + "：\n"
-
+                info("股票模块-自选股功能-自选股功能选择处理器：用户"+
+                     update.effective_user.name+
+                     "选择添加一条自选")
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text=user + "数据库中没有您的自选信息"
+                    text=user + "请输入搜索词"
                 )
-            else:
-                for i in stocks:
-                    display_stock_short(i[1], update)
-                return ConversationHandler.END
+                return STOCK_ADD_MINE
+            elif query.data == "删除自选":
+                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
+                     update.effective_user.name +
+                     "选择删除一条自选")
+                if not stock_list_mine(update):
+                    return ConversationHandler.END
+                else:
+                    return STOCK_DELETE_MINE
+            elif query.data == "查看自选":
+                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
+                     update.effective_user.name +
+                     "选择查看全部自选")
+                if not stock_list_mine(update):
+                    return ConversationHandler.END
+                else:
+                    return STOCK_SELECT
+            elif query.data == "列出全部自选":
+                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
+                     update.effective_user.name +
+                     "选择列出全部自选简报")
+                stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
+                if stocks is None:
+                    user = update.effective_user.name + "：\n"
+
+                    query.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text=user + "数据库中没有您的自选信息"
+                    )
+                else:
+                    stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
+                    if stocks is None:
+                        user = update.effective_user.name + "：\n"
+
+                        query.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=user + "数据库中没有您的自选信息"
+                        )
+                    else:
+                        text = ""
+                        for i in stocks:
+                            try:
+                                session = requests.session()
+                                session.get("https://xueqiu.com/k?q=" + i[1], headers=header)
+                                res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + i[1],
+                                                  headers=header)
+                                json_str = res.json()
+                                # 股票名
+                                name = json_str['data']['items'][0]['quote']['name']
+                                # 数据时间
+                                dt = json_str['data']['items'][0]['quote']['time']
+                                if dt is not None:
+                                    time_local = time.localtime(dt / 1000)
+                                    dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+                                # 交易状态
+                                status = json_str['data']['items'][0]['market']['status']
+
+                                # 现价
+                                current = json_str['data']['items'][0]['quote']['current']
+                                # 昨收
+                                end_price = json_str['data']['items'][0]['quote']['last_close']
+                                # 跌涨数
+                                cost = 0
+                                if current is not None and end_price is not None:
+                                    cost = current - end_price
+                                # 跌涨率%
+                                rate = 0
+                                if cost is not None and end_price is not None and cost != 0:
+                                    rate = cost / end_price
+
+                                cost = float(format(cost, ".2f"))
+                                if cost > 0:
+                                    cost = "+" + str(cost)
+                                rate = float(format(rate * 100, ".2f"))
+                                if rate > 0:
+                                    rate = "+" + str(rate)
+
+                                text += "%s" % dt
+                                text += "（%s）\n" % status
+                                text += "%s " % name
+                                text += "（%s）\n" % i[1]
+                                text += "现价：%s " % current
+                                text += "（%s " % cost
+                                text += "，%s%%）\n\n" % rate
+
+                            except Exception as e:
+                                user = update.effective_user.name + "：\n"
+
+                                query.bot.send_message(
+                                    chat_id=update.effective_chat.id,
+                                    text=user + "服务器错误，错误原因：" + str(e)
+                                )
+                                return ConversationHandler.END
+
+                        user = update.effective_user.name + "：\n"
+                        query.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=user + text
+                        )
+                    return ConversationHandler.END
+        except:
+            error("股票模块-自选股功能-自选股功能选择处理器异常")
+            return ConversationHandler.END
 
     # 股票-股票查找器
     def search_func(update: Update):
@@ -345,6 +464,7 @@ def add_stock_plugin(dispatcher):
 
     # 股票-自选股添加选择器
     def add_mine(update: Update, _: CallbackContext) -> int:
+        info("用户"+update.effective_user.name+"选择了添加自选")
         search_func(update)
         return STOCK_DO_ADD_MINE
 
@@ -354,6 +474,7 @@ def add_stock_plugin(dispatcher):
         query.answer()
         query.delete_message()
         code = query.data
+        info("用户" + update.effective_user.name + "添加了一条自选，代码为：" +code)
         user_id = update.effective_user.id
         session = requests.session()
         session.get("https://xueqiu.com/k?q=" + code, headers=header)
@@ -362,14 +483,14 @@ def add_stock_plugin(dispatcher):
         name = json_str['data']['items'][0]['quote']['name']
         if sql_funcs.sql_insert_mine(user_id, code, name):
             user = update.effective_user.name + "：\n"
-
+            info("用户" + update.effective_user.name + "添加了一条自选成功，代码为：" + code)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "添加成功"
             )
         else:
             user = update.effective_user.name + "：\n"
-
+            warning("用户" + update.effective_user.name + "添加自选失败，代码为：" + code)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "添加失败"
@@ -382,20 +503,21 @@ def add_stock_plugin(dispatcher):
         query.answer()
         query.delete_message()
         code = query.data
+        info("用户" + update.effective_user.name + "删除了一条自选，代码为：" + code)
         user_id = update.effective_user.id
         if sql_funcs.sql_delete_mine(user_id, code):
             user = update.effective_user.name + "：\n"
-
+            info("用户" + update.effective_user.name + "删除了一条自选成功，代码为：" + code)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "删除成功"
             )
         else:
             user = update.effective_user.name + "：\n"
-
+            info("用户" + update.effective_user.name + "删除了一条自选失败，代码为：" + code)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=user + "删除成功"
+                text=user + "删除失败"
             )
         return ConversationHandler.END
 
@@ -428,75 +550,3 @@ def add_stock_plugin(dispatcher):
     )
 
     dispatcher.add_handler(conv_handler)
-
-    # 股票-快速简报打印器
-    def fast_list_all_mine(update, context):
-        stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
-        if stocks is None:
-            user = update.effective_user.name + "：\n"
-
-            context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=user + "数据库中没有您的自选信息"
-            )
-        else:
-            for i in stocks:
-                try:
-                    session = requests.session()
-                    session.get("https://xueqiu.com/k?q=" + i[1], headers=header)
-                    res = session.get("https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=" + i[1],
-                                      headers=header)
-                    json_str = res.json()
-                    # 股票名
-                    name = json_str['data']['items'][0]['quote']['name']
-                    # 数据时间
-                    dt = json_str['data']['items'][0]['quote']['time']
-                    if dt is not None:
-                        time_local = time.localtime(dt / 1000)
-                        dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
-                    # 交易状态
-                    status = json_str['data']['items'][0]['market']['status']
-
-                    # 现价
-                    current = json_str['data']['items'][0]['quote']['current']
-                    # 昨收
-                    end_price = json_str['data']['items'][0]['quote']['last_close']
-                    # 跌涨数
-                    cost = 0
-                    if current is not None and end_price is not None:
-                        cost = current - end_price
-                    # 跌涨率%
-                    rate = 0
-                    if cost is not None and end_price is not None and cost != 0:
-                        rate = cost / end_price
-
-                    cost = float(format(cost, ".2f"))
-                    if cost > 0:
-                        cost = "+" + str(cost)
-                    rate = float(format(rate * 100, ".2f"))
-                    if rate > 0:
-                        rate = "+" + str(rate)
-
-                    text = "当地：%s" % dt
-                    text += "（%s）\n" % status
-                    text += "%s " % name
-                    text += "（%s）\n" % i[1]
-                    text += "现价：%s " % current
-                    text += "（%s " % cost
-                    text += "，%s%%）" % rate
-                    user = update.effective_user.name + "：\n"
-
-                    context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text=user + text
-                    )
-                except Exception as e:
-                    user = update.effective_user.name + "：\n"
-
-                    context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text=user + "服务器错误，错误原因：" + str(e)
-                    )
-
-    handler = CommandHandler('stock_mine', fast_list_all_mine)
-    dispatcher.add_handler(handler)

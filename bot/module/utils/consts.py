@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
+from module.utils.logger import info, warning, error
 
 SETU, SENTENCE, STOCK_FUNC, STOCK_MINE, STOCK_ADD_MINE, STOCK_DO_ADD_MINE, STOCK_DELETE_MINE, STOCK_SEARCH, STOCK_SELECT = range(
     9)
@@ -11,8 +12,8 @@ header = {
 
 
 def cancel(update: Update, _: CallbackContext) -> int:
-    user = update.effective_user.name+"：\n"
-
+    user = update.effective_user.name + "：\n"
+    warning(update.effective_user.name + "取消了当前正在运行的命令")
     update.message.reply_text(
         user + '命令结束'
     )

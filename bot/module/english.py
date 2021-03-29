@@ -4,11 +4,10 @@ import random
 import time
 
 import requests
-from bs4 import BeautifulSoup
 from telegram.ext import (
     CommandHandler
 )
-
+from module.utils.logger import info, warning, error
 
 def add_english_plugin(dispatcher):
     # 每日英语
@@ -30,26 +29,30 @@ def add_english_plugin(dispatcher):
             pic = json_str["picture2"]
             voice = json_str["tts"]
             user = update.effective_user.name+"：\n"
-
+            text=user + "英文原文：" + english\
+                     + "\n翻译：" + chinese\
+                     + "\n封面："
+            info("每日英语模块："+text)
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=user + "英文原文：" + english
-                     + "\n翻译：" + chinese
-                     + "\n封面：")
+                text=text)
+            info("每日英语模块：发送图片" + pic)
             context.bot.send_photo(
                 chat_id=update.effective_chat.id,
                 photo=pic
             )
+            info("每日英语模块：发送音频" + voice)
             context.bot.send_voice(
                 chat_id=update.effective_chat.id,
                 voice=voice
             )
         except Exception as e:
             user = update.effective_user.name+"：\n"
-
+            text=user + "服务器错误，错误原因：" + str(e)
+            error("每日英语模块："+text)
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=user + "服务器错误，错误原因：" + str(e)
+                text=text
             )
 
     handler = CommandHandler('english', english)
