@@ -202,6 +202,8 @@
 
       ![stock_search](pics/stock_fast_list.gif)
     
+9. ### 管理员
+    管理员功能为管理员提供了获取日志和对数据库操作的方法，使用前请在config中设置管理员
 
 ## 注意
 
