@@ -2,8 +2,7 @@
 
 [![MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/UtopiaXC/Utopia-Bot-For-QQ/blob/master/LICENSE)
 [![python](https://img.shields.io/badge/python-3.x-blue)](https://www.python.org/downloads/)
-[![QQ Group](https://img.shields.io/badge/QQ%E8%AE%A8%E8%AE%BA%E7%BE%A4-663827726-yellowgreen)](https://jq.qq.com/?_wv=1027&k=JgJPM4Rv)
-[![Telegram](https://img.shields.io/badge/Telegram-Group-blue)](https://t.me/gugugu_club)  
+[![Telegram](https://img.shields.io/badge/Telegram-wwwwtfffffffffffffffffff-blue)](https://t.me/wwwwtfffffffffffffffffff)  
 
 这是一个由Python实现的基于[python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)框架的Telegram机器人  
 
