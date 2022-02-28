@@ -5,9 +5,9 @@ from telegram.ext import (
     CallbackContext,
     CallbackQueryHandler, MessageHandler, Filters,
 )
-from module.utils.consts import cancel
-from module.utils.logger import info, warning, error, compress_file
-from module.utils.sql_funcs import get_database_message, reset_database
+from .utils.consts import cancel
+from .utils.logger import info, warning, error, compress_file
+from .utils.sql_funcs import get_database_message, reset_database
 from config import admin_id
 
 ADMIN_SELECT, \
@@ -24,7 +24,10 @@ def add_admin_plugin(dispatcher):
             id = update.effective_user.id
             if str(id) not in admin_id:
                 user = update.effective_user.name
-                warning("管理员模块：一名非管理员用户" + user + "请求访问管理功能")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "非管理员用户请求访问管理功能"
+                warning("管理员模块" + log_text)
                 text = user + "：\n" + "您不是管理员，没有本指令权限！\n" \
                                       "如果您是管理员，请先将您的ID添加如配置文件"
                 update.message.reply_text(text)
@@ -36,14 +39,17 @@ def add_admin_plugin(dispatcher):
             reply_markup = InlineKeyboardMarkup(keyboard)
             user = update.effective_user.name
             text = user + "：\n" + '请选择管理功能'
-            info("管理员模块：一名管理员" + user + "选择了管理员功能")
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "一名管理员选择了管理员功能"
+            info("管理员模块：" + log_text)
             update.message.reply_text(
                 text,
                 reply_markup=reply_markup,
             )
             return ADMIN_SELECT
         except Exception as e:
-            error("管理员模块异常：" + str(e))
+            error("管理员模块异常：" + str(repr(e)))
 
     # 管理员-接收选择结果
     def admin(update: Update, _: CallbackContext) -> None:
@@ -60,7 +66,10 @@ def add_admin_plugin(dispatcher):
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 user = update.effective_user.name
                 text = user + "：\n" + '请选择数据库管理功能'
-                info("管理员模块：一名管理员" + user + "选择了数据库管理功能")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "一名管理员选择了数据库管理功能"
+                info("管理员模块：" +log_text)
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=text,
@@ -77,7 +86,10 @@ def add_admin_plugin(dispatcher):
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 user = update.effective_user.name
                 text = user + "：\n" + '请选择日志类型功能'
-                info("管理员模块：一名管理员" + user + "选择了日志管理功能")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "一名管理员选择了日志管理功能"
+                info("管理员模块：" + log_text)
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=text,
@@ -87,7 +99,7 @@ def add_admin_plugin(dispatcher):
 
 
         except Exception as e:
-            error("管理员模块异常：" + str(e))
+            error("管理员模块：异常：" + str(repr(e)))
             return ConversationHandler.END
 
     # 管理员-日志管理模块
@@ -127,7 +139,7 @@ def add_admin_plugin(dispatcher):
                 )
             return ConversationHandler.END
         except Exception as e:
-            error("日志管理模块异常：" + str(e))
+            error("日志管理模块异常：" + str(repr(e)))
             return ConversationHandler.END
 
     # 管理员-数据库操作模块
@@ -139,7 +151,10 @@ def add_admin_plugin(dispatcher):
             type = query.data
             if type == "获取数据库信息":
                 user = update.effective_user.name
-                info("一名管理员" + user + "获取了数据库信息")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "一名管理员获取了数据库信息"
+                info("管理员模块：" + log_text)
                 text = user + "：\n" + get_database_message()
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
@@ -148,7 +163,10 @@ def add_admin_plugin(dispatcher):
                 return ConversationHandler.END
             elif type == "重置数据库":
                 user = update.effective_user.name
-                info("一名管理员" + user + "选择了重置数据库，进入验证阶段")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择了重置数据库，进入验证阶段"
+                info("管理员模块：" + log_text)
                 text = user + "：\n请输入您的ID来确认重置数据库"
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
@@ -156,7 +174,7 @@ def add_admin_plugin(dispatcher):
                 )
             return DELETE_DATABASE
         except Exception as e:
-            error("数据库管理模块-操作选择接收异常：" + str(e))
+            error("管理员模块：数据库管理模块-操作选择接收异常：" + str(repr(e)))
             return ConversationHandler.END
 
     def reset_db(update: Update, _: CallbackContext):
@@ -164,7 +182,10 @@ def add_admin_plugin(dispatcher):
         query = update.callback_query
         if str(input) != str(update.effective_user.id) or str(update.effective_user.id) not in admin_id:
             user = update.effective_user.name
-            warning("管理员" + user + "在执行数据库重置时输入了错误的ID，执行被取消")
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "在执行数据库重置时输入了错误的ID，执行被取消"
+            info("管理员模块：" + log_text)
             text = user + "：\n" + "您输入的ID有误或无管理员权限，数据库的重置已取消"
             update.message.reply_text(
                 text=text
@@ -172,14 +193,20 @@ def add_admin_plugin(dispatcher):
             return ConversationHandler.END
         if not reset_database():
             user = update.effective_user.name
-            error("管理员" + user + "在执行数据库重置时发生了数据库错误，数据库重置失败")
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "在执行数据库重置时发生了数据库错误，数据库重置失败"
+            info("管理员模块：" + log_text)
             text = user + "：\n" + "在执行数据库重置时发生了数据库错误，数据库重置失败"
             update.message.reply_text(
                 text=text
             )
         else:
             user = update.effective_user.name
-            warning("管理员" + user + "重置了数据库")
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "重置了数据库"
+            info("管理员模块：" + log_text)
             text = user + "：\n" + "数据库重置成功"
             update.message.reply_text(
                 text=text

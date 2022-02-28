@@ -1,6 +1,5 @@
 import sqlite3
 
-from telegram import Update
 from config import max_mine_stock
 
 

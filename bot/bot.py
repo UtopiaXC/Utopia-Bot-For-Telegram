@@ -1,5 +1,5 @@
 # 导入配置文件
-import sys
+import telegram.error
 
 import config
 # 导入初始化检查
@@ -8,19 +8,6 @@ from module.utils.logger import logger_start_check
 from module.utils.logger import info, warning, error
 # 加载telegram-bot
 from telegram.ext import Updater
-
-# 加载模块
-import module.stocks as stocks
-import module.start as start
-import module.help as help
-import module.setu as setu
-import module.sentence as sentence
-import module.bili as bili
-import module.weibo as weibo
-import module.english as english
-import module.zhihu as zhihu
-import module.get_me as get_me
-import module.admin as admin
 
 logger_start_check()
 info("主进程：日志文件检查完成")
@@ -43,8 +30,27 @@ if len(config.admin_id) == 0:
 info("主进程：配置文件检查完成")
 
 # 初始化Telegram-Bot
-updater = Updater(token=config.Token, use_context=True)
+updater=None
+try:
+    updater = Updater(token=config.Token, use_context=True)
+except telegram.error.InvalidToken:
+    error("主进程：机器人Token错误，无法启动，程序结束")
+    exit(0)
 dispatcher = updater.dispatcher
+
+
+# 加载模块，需要手动载入模块并添加dispatcher
+import module.stocks as stocks
+import module.start as start
+import module.help as help
+import module.setu as setu
+import module.sentence as sentence
+import module.bili as bili
+import module.weibo as weibo
+import module.english as english
+import module.zhihu as zhihu
+import module.get_me as get_me
+import module.admin as admin
 
 # 将模块添加
 stocks.add_stock_plugin(dispatcher)
@@ -60,4 +66,5 @@ get_me.add_get_me_plugin(dispatcher)
 admin.add_admin_plugin(dispatcher)
 
 # 启动消息监听
+print("程序已启动，已进入轮询（请忽略启动过程中的警告）")
 updater.start_polling()

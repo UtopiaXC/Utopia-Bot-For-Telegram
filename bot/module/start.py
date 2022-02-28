@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import (
     CommandHandler
 )
-from module.utils.logger import info, warning, error
+from .utils.logger import info, warning, error
 
 
 def add_start_plugin(dispatcher):

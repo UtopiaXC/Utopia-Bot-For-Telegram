@@ -7,8 +7,8 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 import requests
-from module.utils.consts import cancel
-from module.utils.logger import info, warning, error
+from .utils.consts import cancel
+from .utils.logger import info, warning, error
 
 SENTENCE=0
 
@@ -39,13 +39,16 @@ def add_sentence_plugin(dispatcher):
             reply_markup = InlineKeyboardMarkup(keyboard)
             user = update.effective_user.name + "：\n"
             text = user + '请选择类型'
-            info("一言模块：" + text)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "开始选择类型"
+            info("一言模块：" + log_text)
             update.message.reply_text(
                 text,
                 reply_markup=reply_markup,
             )
         except:
-            error("一言模块-类型选择器异常")
+            error("一言模块：类型选择器异常")
         return SENTENCE
 
     # 一言-发送句子
@@ -71,7 +74,7 @@ def add_sentence_plugin(dispatcher):
             }
             type_name = types[query.data]
             try:
-                res = requests.get("https://v1.hitokoto.cn?c=" + type)
+                res = requests.get("https://international.v1.hitokoto.cn?c=" + type)
                 json_res = json.loads(res.text)
                 s = json_res['hitokoto']
                 author = json_res['from_who']
@@ -79,14 +82,31 @@ def add_sentence_plugin(dispatcher):
                     author = "匿名"
                 user = update.effective_user.name + "：\n"
                 text = user + "类型：" + type_name + "\n" + s + "\n作者：" + author
-                info("一言模块：" + text)
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "类型：" + type_name + " " + s + " 作者：" + author
+                info("一言模块：" + log_text)
                 query.bot.send_message(chat_id=update.effective_chat.id,
                                        text=text)
-            except Exception as e:
+            except KeyError as e:
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "当前分类无内容"
+                error("一言模块：" + log_text)
                 user = update.effective_user.name + "：\n"
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text=user + "服务器错误，错误原因" + str(e)
+                    text=user + "当前分类无内容"
+                )
+            except Exception as e:
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "服务器错误，错误原因" + str(repr(e))
+                error("一言模块："+log_text)
+                user = update.effective_user.name + "：\n"
+                query.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=user + "服务器错误，错误原因" + str(repr(e))
                 )
         except:
             error("一言模块：发送方法异常")

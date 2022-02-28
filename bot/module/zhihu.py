@@ -6,8 +6,8 @@ import requests
 from telegram.ext import (
     CommandHandler
 )
-from module.utils.consts import header
-from module.utils.logger import info, warning, error
+from .utils.consts import header
+from .utils.logger import info, warning, error
 
 
 def add_zhihu_plugin(dispatcher):
@@ -24,7 +24,10 @@ def add_zhihu_plugin(dispatcher):
             text = user + '北京时间:' + localtime + " 知乎日报" \
                    + "\n文章标题：" + title \
                    + "\n文章链接：" + url
-            info("知乎日报模块：" + text)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "获取了一条知乎日报，链接为" + url
+            info("知乎日报模块：" + log_text)
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=text)

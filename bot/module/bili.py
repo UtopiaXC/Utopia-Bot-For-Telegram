@@ -6,7 +6,7 @@ import requests
 from telegram.ext import (
     CommandHandler
 )
-from module.utils.logger import info, warning, error
+from .utils.logger import info, warning, error
 
 
 def add_bili_plugin(dispatcher):
@@ -32,20 +32,25 @@ def add_bili_plugin(dispatcher):
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=text)
-                info("bili模块：" + text)
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "获取了一条哔哩哔哩热搜，BV号为" + bv+"，封面为"+pic
+                info("bili模块：" + log_text)
                 context.bot.send_photo(
                     chat_id=update.effective_chat.id, photo=pic)
-                info("bili模块：" + user + pic)
             except Exception as e:
                 user = update.effective_user.name + "：\n"
-                text = user + "服务器错误，错误原因：" + str(e)
+                text = user + "服务器错误，错误原因：" + str(repr(e))
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=text
                 )
-                error("bili模块：" + text)
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "服务器错误，错误原因：" + str(repr(e))
+                error("bili模块：" + log_text)
         except:
-            error("bili模块异常")
+            error("bili模块：异常")
 
     handler = CommandHandler('bili', bili)
     dispatcher.add_handler(handler)

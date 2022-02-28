@@ -10,11 +10,10 @@ from telegram.ext import (
     Filters
 )
 import requests
-import module.utils.sql_funcs as sql_funcs
-from module.utils.consts import header, cancel
+from .utils import sql_funcs
+from .utils.consts import header, cancel
 from config import max_mine_stock
-
-from module.utils.logger import info, warning, error
+from .utils.logger import info, warning, error
 
 STOCK_FUNC, \
 STOCK_MINE, \
@@ -32,8 +31,11 @@ def add_stock_plugin(dispatcher):
             stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
             if stocks is None:
                 user = update.effective_user.name + "：\n"
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text=user_name+"("+user_id+")"+ "数据库中没有您的自选信息"
                 text = user + "数据库中没有您的自选信息"
-                warning("股票模块-快速打印简报方法：" + text)
+                warning("股票模块-快速打印简报方法：" + log_text)
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=text
@@ -88,14 +90,19 @@ def add_stock_plugin(dispatcher):
                     except Exception as e:
                         user = update.effective_user.name + "：\n"
                         text = user + "服务器错误，错误原因：" + str(e)
-                        error("股票模块-快速打印简报方法：" + text)
+                        user_id = str(update.effective_user.id)
+                        user_name = str(update.effective_user.name)
+                        log_text = user_name + "(" + user_id + ")" + "服务器错误，错误原因：" + str(e)
+                        error("股票模块-快速打印简报方法：" + log_text)
                         context.bot.send_message(
                             chat_id=update.effective_chat.id,
                             text=text
                         )
                         return
-                info("股票模块-快速打印简报方法：成功获取用户" + update.effective_user.name +
-                     "的" + str(len(stocks)) + "条股票数据")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "的" + str(len(stocks)) + "条股票数据"
+                info("股票模块-快速打印简报方法：成功获取" + log_text)
                 user = update.effective_user.name + "：\n"
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
@@ -118,7 +125,10 @@ def add_stock_plugin(dispatcher):
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             user = update.effective_user.name + "：\n"
-            info("股票模块-方法选择器：" + update.effective_user.name + "开始了股票功能")
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "开始了股票功能"
+            info("股票模块-方法选择器：" + log_text)
             update.message.reply_text(
                 user + '请选择方法',
                 reply_markup=reply_markup,
@@ -134,7 +144,10 @@ def add_stock_plugin(dispatcher):
             query.answer()
             query.delete_message()
             if query.data == "自选":
-                info("股票模块-功能选择器：" + update.effective_user.name + "选择了自选功能")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择了自选功能"
+                info("股票模块-功能选择器：" + log_text)
                 keyboard = [
                     [
                         InlineKeyboardButton("添加自选", callback_data='添加自选'),
@@ -153,7 +166,10 @@ def add_stock_plugin(dispatcher):
                 return STOCK_MINE
             elif query.data == "搜索":
                 user = update.effective_user.name + "：\n"
-                info("股票模块-功能选择器：" + update.effective_user.name + "选择了搜索功能")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择了搜索功能"
+                info("股票模块-功能选择器：" +log_text)
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=user + "请输入搜索词"
@@ -171,7 +187,10 @@ def add_stock_plugin(dispatcher):
             stocks = sql_funcs.sql_select_all_mine(user_id)
             if stocks is None:
                 user = update.effective_user.name + "：\n"
-                warning("股票模块-自选功能-股票选择器：" + update.effective_user.name + "：数据库中无自选股")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "数据库中无自选股"
+                warning("股票模块-自选功能-股票选择器：" + log_text)
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=user + "数据库内没有您的自选数据"
@@ -184,7 +203,6 @@ def add_stock_plugin(dispatcher):
                     keyboard.append([InlineKeyboardButton(describe, callback_data=i[1])])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 user = update.effective_user.name + "：\n"
-
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=user + "请选择股票",
@@ -287,16 +305,21 @@ def add_stock_plugin(dispatcher):
             text += "市值：%s万\n" % total_price
             text += "总股本：%s万" % total_shares
             user = update.effective_user.name + "：\n"
-            info("股票模块-自选股-自选股具体信息：用户" + update.effective_user.name +
-                 "打印了一条股票具体信息，股票代码：" + code)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "打印了一条股票具体信息，股票代码：" + code
+            info("股票模块-自选股-自选股具体信息：" + update.effective_user.name + log_text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + text
             )
         except Exception as e:
             user = update.effective_user.name + "：\n"
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "服务器错误，错误原因：" + str(e)
             text = user + "服务器错误，错误原因：" + str(e)
-            error("股票模块-自选股-自选股具体信息：" + text)
+            error("股票模块-自选股-自选股具体信息：" + log_text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=text
@@ -310,38 +333,41 @@ def add_stock_plugin(dispatcher):
             query.delete_message()
             if query.data == "添加自选":
                 user = update.effective_user.name + "：\n"
-                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
-                     update.effective_user.name +
-                     "选择添加一条自选")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择添加一条自选"
+                info("股票模块-自选股功能-自选股功能选择处理器："+log_text)
                 query.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=user + "请输入搜索词"
                 )
                 return STOCK_ADD_MINE
             elif query.data == "删除自选":
-                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
-                     update.effective_user.name +
-                     "选择删除一条自选")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择删除一条自选"
+                info("股票模块-自选股功能-自选股功能选择处理器：" + log_text)
                 if not stock_list_mine(update):
                     return ConversationHandler.END
                 else:
                     return STOCK_DELETE_MINE
             elif query.data == "查看自选":
-                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
-                     update.effective_user.name +
-                     "选择查看全部自选")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择查看全部自选"
+                info("股票模块-自选股功能-自选股功能选择处理器：" +log_text)
                 if not stock_list_mine(update):
                     return ConversationHandler.END
                 else:
                     return STOCK_SELECT
             elif query.data == "列出全部自选":
-                info("股票模块-自选股功能-自选股功能选择处理器：用户" +
-                     update.effective_user.name +
-                     "选择列出全部自选简报")
+                user_id = str(update.effective_user.id)
+                user_name = str(update.effective_user.name)
+                log_text = user_name + "(" + user_id + ")" + "选择列出全部自选简报"
+                info("股票模块-自选股功能-自选股功能选择处理器：" +log_text)
                 stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
                 if stocks is None:
                     user = update.effective_user.name + "：\n"
-
                     query.bot.send_message(
                         chat_id=update.effective_chat.id,
                         text=user + "数据库中没有您的自选信息"
@@ -350,7 +376,6 @@ def add_stock_plugin(dispatcher):
                     stocks = sql_funcs.sql_select_all_mine(update.effective_user.id)
                     if stocks is None:
                         user = update.effective_user.name + "：\n"
-
                         query.bot.send_message(
                             chat_id=update.effective_chat.id,
                             text=user + "数据库中没有您的自选信息"
@@ -404,7 +429,6 @@ def add_stock_plugin(dispatcher):
 
                             except Exception as e:
                                 user = update.effective_user.name + "：\n"
-
                                 query.bot.send_message(
                                     chat_id=update.effective_chat.id,
                                     text=user + "服务器错误，错误原因：" + str(e)
@@ -450,21 +474,22 @@ def add_stock_plugin(dispatcher):
                 text += "搜索结果过多，仅显示前五条结果"
             reply_markup = InlineKeyboardMarkup(keyboard)
             user = update.effective_user.name + "：\n"
-
             update.message.reply_text(
                 text=user + text,
                 reply_markup=reply_markup,
             )
         except Exception as e:
             user = update.effective_user.name + "：\n"
-
             update.message.reply_text(
                 text=user + "服务器错误，错误原因：" + str(e)
             )
 
     # 股票-自选股添加选择器
     def add_mine(update: Update, _: CallbackContext) -> int:
-        info("用户" + update.effective_user.name + "选择了添加自选")
+        user_id = str(update.effective_user.id)
+        user_name = str(update.effective_user.name)
+        log_text = user_name + "(" + user_id + ")" + "选择了添加自选"
+        info("股票-自选股添加选择器：" + update.effective_user.name + log_text)
         search_func(update)
         return STOCK_DO_ADD_MINE
 
@@ -474,7 +499,10 @@ def add_stock_plugin(dispatcher):
         query.answer()
         query.delete_message()
         code = query.data
-        info("用户" + update.effective_user.name + "添加了一条自选，代码为：" + code)
+        user_id = str(update.effective_user.id)
+        user_name = str(update.effective_user.name)
+        log_text = user_name + "(" + user_id + ")" + "添加了一条自选，代码为：" + code
+        info("股票-自选股添加器：" +log_text)
         user_id = update.effective_user.id
         session = requests.session()
         session.get("https://xueqiu.com/k?q=" + code, headers=header)
@@ -483,14 +511,20 @@ def add_stock_plugin(dispatcher):
         name = json_str['data']['items'][0]['quote']['name']
         if sql_funcs.sql_insert_mine(user_id, code, name):
             user = update.effective_user.name + "：\n"
-            info("用户" + update.effective_user.name + "添加了一条自选成功，代码为：" + code)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "添加了一条自选成功，代码为：" + code
+            info("股票-自选股添加器：" + log_text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "添加成功"
             )
         else:
             user = update.effective_user.name + "：\n"
-            warning("用户" + update.effective_user.name + "添加自选失败，代码为：" + code)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "添加自选失败，代码为：" + code
+            warning("股票-自选股添加器：" + update.effective_user.name + log_text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "添加失败，您可能已经添加该股票或您已经达到自选添加上限。（上限为%s）" % max_mine_stock
@@ -503,18 +537,27 @@ def add_stock_plugin(dispatcher):
         query.answer()
         query.delete_message()
         code = query.data
-        info("用户" + update.effective_user.name + "删除了一条自选，代码为：" + code)
+        user_id = str(update.effective_user.id)
+        user_name = str(update.effective_user.name)
+        log_text = user_name + "(" + user_id + ")" +"删除了一条自选，代码为：" + code
+        info("股票-自选股删除器：" + log_text)
         user_id = update.effective_user.id
         if sql_funcs.sql_delete_mine(user_id, code):
             user = update.effective_user.name + "：\n"
-            info("用户" + update.effective_user.name + "删除了一条自选成功，代码为：" + code)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "删除了一条自选成功，代码为：" + code
+            info("股票-自选股删除器：" + log_text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "删除成功"
             )
         else:
             user = update.effective_user.name + "：\n"
-            info("用户" + update.effective_user.name + "删除了一条自选失败，代码为：" + code)
+            user_id = str(update.effective_user.id)
+            user_name = str(update.effective_user.name)
+            log_text = user_name + "(" + user_id + ")" + "删除了一条自选失败，代码为：" + code
+            warning("股票-自选股删除器：" + log_text)
             query.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=user + "删除失败"
